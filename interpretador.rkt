@@ -214,13 +214,24 @@
                            (evaluar-expresion true-exp env)
                            (evaluar-expresion false-exp env)))
       (variableLocal-exp (ids exps cuerpo)
-                         '("pendiente terminar"))
+                            (let ((args  (eval-rands exps env)))
+                              (evaluar-expresion cuerpo (extend-env ids args env))))
       (procedimiento-ex (ids cuerpo)
-                        '("pendiente terminar"))
+                        (cerradura ids cuerpo env))
       (app-exp (exp exps)
-               '("pendiente terminar"))
+               (let ((proc (evaluar-expresion exp env))
+                     (args (eval-rands exps env)))
+                 (if (procVal? proc)
+                     (apply-procedure proc args)
+                     "Error, no es un procedimiento")))
       (declararRec-exp (proc-names idss bodies cuerpo)
-                       '("pendiente terminar")))))
+                       (let ((cerraduras
+                              (map (lambda (ids body)
+                                     (cerradura ids
+                                                (declararRec-exp proc-names idss bodies body)
+                                                env))
+                                   idss bodies)))
+                         (evaluar-expresion cuerpo (extend-env proc-names cerraduras env)))))))
 
 ;eval-rands: <list-of expresion> <ambiente> -> <list-of valor>
 ;Evalúa cada expresión de una lista en el ambiente dado
@@ -283,8 +294,9 @@
 ;Evalúa el cuerpo de un procedimiento en el ambiente extendido con sus argumentos   [corresponde al punto 7]
 (define apply-procedure
   (lambda (proc args)
-    '("pendiente por terminar")))
-
+    (cases procVal proc
+      (cerradura (lista-ID exp amb)
+                 (evaluar-expresion exp (extend-env lista-ID args amb))))))
 ;*******************************************************************************************
 ;Ambientes
 

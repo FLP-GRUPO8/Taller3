@@ -6,7 +6,7 @@
 ;; Integrantes:
 
 ;; Puntos X: FERNANDEZ GUZMAN SANTIAGO - 202610133
-;; Puntos X: MORALES YUGUE IVAN CAMILO - 202610135
+;; Puntos (1 al 4): MORALES YUGUE IVAN CAMILO - 202610135
 ;; Puntos X: COBO MENDOZA CRISTIAN CAMILO - 202323571
 ;; Puntos X: PEREZ UMBARILA JHAN ALEJANDRO - 202510030
 ;; Repositorio GitHub: https://github.com/FLP-GRUPO8/Taller3
@@ -46,6 +46,43 @@
 ;;  <primitiva-unaria>  ::= longitud | add1 | sub1 | neg
 ;******************************************************************************************
 ;
+;Funciones Auxiliares
+
+;list-find-position: symbol <list-of symbol> -> número | #f
+;Posición de un símbolo en una lista de símbolos
+(define list-find-position
+  (lambda (sym los)
+    (list-index (lambda (sym1) (eqv? sym1 sym)) los)))
+
+;list-index: predicado lista -> número | #f
+;Posición del primer elemento que cumple el predicado
+(define list-index
+  (lambda (pred ls)
+    (cond
+      ((null? ls) #f)
+      ((pred (car ls)) 0)
+      (else (let ((list-index-r (list-index pred (cdr ls))))
+              (if (number? list-index-r)
+                  (+ list-index-r 1)
+                  #f))))))
+
+;bool->num: booleando -> numero
+;convierte un los booleanos #t y #f a 0 y 1 respectivamente
+(define bool->num
+  (lambda (b)
+    (if b 1 0)))
+
+;values-equal?: valor valor -> boolean
+;Compara dos valores: con = si ambos son números y con equal? en los demás casos
+(define values-equal?
+  (lambda (v1 v2)
+    (if (and (number? v1) (number? v2))
+        (= v1 v2)
+        (equal? v1 v2))))
+
+;******************************************************************************************
+
+
 ; Especificación léxica
 
 (define scanner-spec-simple-interpreter
@@ -146,7 +183,7 @@
   (lambda (pgm)
     (cases programa pgm
       (un-programa (body)
-                   (eval-expression body (init-env))))))
+                   (evaluar-expresion body (init-env))))))
 
 ;init-env: -> <ambiente>
 ;Ambiente con (@a @b @c @d @e) ligados a (1 2 3 "hola" "FLP")   [corresponde al punto 2]
@@ -157,23 +194,25 @@
      '(1 2 3 "hola" "FLP")
      (empty-env))))
 
-;eval-expression: <expresion> <ambiente> -> valor
+;evaluar-expresion: <expresion> <ambiente> -> valor
 ;Evalúa la expresión en el ambiente dado
-(define eval-expression
+(define evaluar-expresion
   (lambda (exp env)
     (cases expresion exp
-      (numero-lit (num)
-                  '("pendiente terminar"))
-      (texto-lit (txt)
-                 '("pendiente terminar"))
-      (var-exp (id)
-               '("pendiente terminar"))
+      (numero-lit (num) num)
+      (texto-lit (txt) txt)
+      (var-exp (id) (buscar-variable id env))
       (primapp-bin-exp (exp1 prim-binaria exp2)
-                       '("pendiente terminar"))
+                       (let ((val1 (eval-rand exp1 env))
+                             (val2 (eval-rand exp2 env)))
+                            (apply-primitive-bin prim-binaria val1 val2)))
       (primapp-un-exp (prim-unaria exp)
-                      '("pendiente terminar"))
+                      (let ((val (eval-rand exp env)))
+                          (apply-primitive-un prim-unaria val)))
       (condicional-exp (test-exp true-exp false-exp)
-                       '("pendiente terminar"))
+                       (if (valor-verdad? (evaluar-expresion test-exp env))
+                           (evaluar-expresion true-exp env)
+                           (evaluar-expresion false-exp env)))
       (variableLocal-exp (ids exps cuerpo)
                          '("pendiente terminar"))
       (procedimiento-ex (ids cuerpo)
@@ -193,40 +232,42 @@
 ;Evalúa un operando individual
 (define eval-rand
   (lambda (rand env)
-    (eval-expression rand env)))
+    (evaluar-expresion rand env)))
 
 ;apply-primitive-bin: <primitiva-binaria> valor valor -> valor
 ;Aplica una primitiva binaria a dos valores ya evaluados   [corresponden al punto 1 y 3]
 (define apply-primitive-bin
   (lambda (prim val1 val2)
     (cases primitiva-binaria prim
-      (primitiva-suma () '("pendiente terminar"))
-      (primitiva-resta () '("pendiente terminar"))
-      (primitiva-div () '("pendiente terminar"))
-      (primitiva-multi () '("pendiente terminar"))
-      (primitiva-concat () '("pendiente terminar"))
-      (primitiva-mayor () '("pendiente terminar"))
-      (primitiva-menor () '("pendiente terminar"))
-      (primitiva-mayor-igual () '("pendiente terminar"))
-      (primitiva-menor-igual () '("pendiente terminar"))
-      (primitiva-diferente () '("pendiente terminar"))
-      (primitiva-comparador-igual () '("pendiente terminar")))))
+      (primitiva-suma () (+ val1 val2))
+      (primitiva-resta () (- val1 val2))
+      (primitiva-div () (/ val1 val2))
+      (primitiva-multi () (* val1 val2))
+      (primitiva-concat () (string-append val1 val2))
+      (primitiva-mayor () (bool->num (> val1 val2)))
+      (primitiva-menor () (bool->num (< val1 val2)))
+      (primitiva-mayor-igual () (bool->num (>= val1 val2)))
+      (primitiva-menor-igual () (bool->num (<= val1 val2)))
+      (primitiva-diferente () (bool->num (not (values-equal? val1 val2))))
+      (primitiva-comparador-igual () (bool->num (values-equal? val1 val2))))))
+
+;valor-verdad?: valor -> boolean
+;En una expresión numérica 0 es falso, cualquier otro caso es verdadero   [corresponde al punto 3]
+(define valor-verdad?
+  (lambda (x)
+    (not (and (number? x) (zero? x)))))
 
 ;apply-primitive-un: <primitiva-unaria> valor -> valor
 ;Aplica una primitiva unaria a un valor ya evaluado
 (define apply-primitive-un
   (lambda (prim val)
     (cases primitiva-unaria prim
-      (primitiva-longitud () '("pendiente terminar"))
-      (primitiva-add1 () '("pendiente terminar"))
-      (primitiva-sub1 () '("pendiente terminar"))
-      (primitiva-negacion-booleana () '("pendiente terminar")))))
+      (primitiva-longitud () (string-length val))
+      (primitiva-add1 () (+ val 1))
+      (primitiva-sub1 () (- val 1))
+      (primitiva-negacion-booleana () (if (valor-verdad? val)
+                                          0 1)))))
 
-;valor-verdad?: valor -> boolean
-;En una expresión numérica 0 es falso, cualquier otro caso es verdadero   [corresponde al punto 3]
-(define valor-verdad?
-  (lambda (x)
-    '("pendiente terminar")))
 
 ;*******************************************************************************************
 ;Procedimientos   [corresponde al punto 6]
@@ -276,28 +317,15 @@
 ;retorna "Error, la variable no existe"   [corresponde al punto 2]
 (define buscar-variable
   (lambda (id env)
-    '("pendiente terminar")))
+    (cases ambiente env
+      (vacio () "Error, la variable no existe")
+      (extendido (syms vals old-env)
+                 (let ((pos (list-find-position id syms)))
+                   (if (number? pos)
+                       (list-ref vals pos)
+                       (buscar-variable id old-env)
+                 ))))))
 
-;*******************************************************************************************
-;Funciones Auxiliares
-
-;list-find-position: symbol <list-of symbol> -> número | #f
-;Posición de un símbolo en una lista de símbolos
-(define list-find-position
-  (lambda (sym los)
-    (list-index (lambda (sym1) (eqv? sym1 sym)) los)))
-
-;list-index: predicado lista -> número | #f
-;Posición del primer elemento que cumple el predicado
-(define list-index
-  (lambda (pred ls)
-    (cond
-      ((null? ls) #f)
-      ((pred (car ls)) 0)
-      (else (let ((list-index-r (list-index pred (cdr ls))))
-              (if (number? list-index-r)
-                  (+ list-index-r 1)
-                  #f))))))
 
 ;******************************************************************************************
 ;Pruebas

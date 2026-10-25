@@ -93,7 +93,7 @@
     (identificador
      ("@" letter (arbno (or letter digit "_"))) symbol)
     (texto
-     (letter (arbno (or letter digit "_"))) string)
+     ( (arbno "_") letter (arbno (or letter digit "_" ":"))) string)
     (numero
      (digit (arbno digit)) number)
     (numero
@@ -340,6 +340,16 @@
 
 
 ;******************************************************************************************
-;Pruebas
+;Pruebas (Por puntos)
 
-;Pendientes
+;e) Decorador: @saludar (decorador) recibe un procedimiento y devuelve otro (@saludo) que agrega "Hola:" al principio del texto que retorna @proc; @decorate guarda ese procedimiento devuelto
+
+;declarar(@integrantes = procedimiento(){"Santiago_Ivan_Cristian_Jhan"};@saludar = procedimiento(@proc){ declarar(@saludo = procedimiento(){("Hola:" concat evaluar @proc() finEval)};){@saludo}};){ declarar (@decorate = evaluar @saludar(@integrantes) finEval;){evaluar @decorate() finEval} }
+
+;Resultado: "Hola:Santiago_Ivan_Cristian_Jhan"
+
+;f) Decorador con mensaje: igual que e, pero el procedimiento devuelto (@saludo) recibe @mensaje, que se agrega al final
+
+;declarar(@integrantes = procedimiento(){"Santiago_Ivan_Cristian_Jhan"};@saludar = procedimiento(@proc){ declarar(@saludo = procedimiento(@mensaje){(("Hola:" concat evaluar @proc() finEval) concat @mensaje)};){@saludo}};){ declarar (@decorate = evaluar @saludar(@integrantes) finEval;){evaluar @decorate("_ProfesoresFLP") finEval} }
+
+;Resultado: "Hola:Santiago_Ivan_Cristian_Jhan_ProfesoresFLP"

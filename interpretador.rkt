@@ -313,7 +313,7 @@
 (define scheme-value? (lambda (v) #t))
 
 ;empty-env: -> <ambiente>
-;Crea un ambiente vacío
+;Crea un ambiente vacío     
 (define empty-env
   (lambda ()
     (vacio)))
@@ -343,3 +343,77 @@
 ;Pruebas
 
 ;Pendientes
+
+;******************************************************************************************
+;Punto 9: programas en el lenguaje
+;(cada programa se copia y pega en el interpretador, después del prompt  --> )
+;
+;Nota: el lenguaje no tiene modulo ni division entera, por eso en (a) y (d)
+;se definen procedimientos auxiliares recursivos (@divEntera y @esPar).
+
+;a) @sumarDigitos: suma los digitos de un entero positivo
+;
+;declararRec (
+;    @divEntera(@n, @d) = Si (@n < @d) { 0 }
+;                         sino { add1(evaluar @divEntera((@n ~ @d), @d) finEval) } ;
+;    @sumarDigitos(@n)  = Si (@n < 10) { @n }
+;                         sino {
+;                           declarar (@q = evaluar @divEntera(@n, 10) finEval ;) {
+;                             ((@n ~ (@q * 10)) + evaluar @sumarDigitos(@q) finEval)
+;                           }
+;                         } ;
+;  ) {
+;    evaluar @sumarDigitos(147) finEval
+;  }
+;
+;Resultado: 12
+
+;b) @sumaNaturales(n): suma de los primeros n enteros positivos
+;
+;Ejemplo n=5:
+;declararRec (
+;    @sumaNaturales(@n) = Si (@n == 0) { 0 }
+;                         sino { (@n + evaluar @sumaNaturales(sub1(@n)) finEval) } ;
+;  ) {
+;    evaluar @sumaNaturales(5) finEval
+;  }
+;Resultado: 15
+;
+;Ejemplo n=10:
+;declararRec (
+;    @sumaNaturales(@n) = Si (@n == 0) { 0 }
+;                         sino { (@n + evaluar @sumaNaturales(sub1(@n)) finEval) } ;
+;  ) {
+;    evaluar @sumaNaturales(10) finEval
+;  }
+;Resultado: 55
+
+;c) @multiplicar(x, y): producto mediante sumas sucesivas (sin usar *)
+;
+;declararRec (
+;    @multiplicar(@x, @y) = Si (@y == 0) { 0 }
+;                           sino { (@x + evaluar @multiplicar(@x, sub1(@y)) finEval) } ;
+;  ) {
+;    evaluar @multiplicar(4, 3) finEval
+;  }
+;
+;Resultado: 12
+
+;d) @sumaParesRango(x, y): suma de los pares en el rango [x, y]
+;
+;declararRec (
+;    @esPar(@n) = Si (@n < 2) { (@n == 0) }
+;                 sino { evaluar @esPar((@n ~ 2)) finEval } ;
+;    @sumaParesRango(@x, @y) = Si (@x > @y) { 0 }
+;                              sino {
+;                                Si evaluar @esPar(@x) finEval {
+;                                  (@x + evaluar @sumaParesRango(add1(@x), @y) finEval)
+;                                } sino {
+;                                  evaluar @sumaParesRango(add1(@x), @y) finEval
+;                                }
+;                              } ;
+;  ) {
+;    evaluar @sumaParesRango(2, 7) finEval
+;  }
+;
+;Resultado: 12

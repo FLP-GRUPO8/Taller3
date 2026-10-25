@@ -5,10 +5,10 @@
 ;;
 ;; Integrantes:
 
-;; Puntos X: FERNANDEZ GUZMAN SANTIAGO - 202610133
+;; Puntos 9 (a, b, c, d): FERNANDEZ GUZMAN SANTIAGO - 202610133
 ;; Puntos (1 al 4): MORALES YUGUE IVAN CAMILO - 202610135
-;; Puntos X: COBO MENDOZA CRISTIAN CAMILO - 202323571
-;; Puntos X: PEREZ UMBARILA JHAN ALEJANDRO - 202510030
+;; Puntos (5 al 8): COBO MENDOZA CRISTIAN CAMILO - 202323571
+;; Puntos 9 (e, f): PEREZ UMBARILA JHAN ALEJANDRO - 202510030
 ;; Repositorio GitHub: https://github.com/FLP-GRUPO8/Taller3
 ;******************************************************************************************
 
@@ -93,7 +93,7 @@
     (identificador
      ("@" letter (arbno (or letter digit "_"))) symbol)
     (texto
-     (letter (arbno (or letter digit "_"))) string)
+     ((arbno "_") letter (arbno (or letter digit "_" ":"))) string)
     (numero
      (digit (arbno digit)) number)
     (numero
@@ -338,12 +338,6 @@
                        (buscar-variable id old-env)
                  ))))))
 
-
-;******************************************************************************************
-;Pruebas
-
-;Pendientes
-
 ;******************************************************************************************
 ;Punto 9: programas en el lenguaje
 ;(cada programa se copia y pega en el interpretador, después del prompt  --> )
@@ -417,3 +411,16 @@
 ;  }
 ;
 ;Resultado: 12
+
+;;-----------------> Puntos e y f <-------------------
+;e) Decorador: @saludar (decorador) recibe un procedimiento y devuelve otro (@saludo) que agrega "Hola:" al principio del texto que retorna @proc; @decorate guarda ese procedimiento devuelto
+
+;declarar(@integrantes = procedimiento(){"Santiago_Ivan_Cristian_Jhan"};@saludar = procedimiento(@proc){ declarar(@saludo = procedimiento(){("Hola:" concat evaluar @proc() finEval)};){@saludo}};){ declarar (@decorate = evaluar @saludar(@integrantes) finEval;){evaluar @decorate() finEval} }
+
+;Resultado: "Hola:Santiago_Ivan_Cristian_Jhan"
+
+;f) Decorador con mensaje: igual que e, pero el procedimiento devuelto (@saludo) recibe @mensaje, que se agrega al final
+
+;declarar(@integrantes = procedimiento(){"Santiago_Ivan_Cristian_Jhan"};@saludar = procedimiento(@proc){ declarar(@saludo = procedimiento(@mensaje){(("Hola:" concat evaluar @proc() finEval) concat @mensaje)};){@saludo}};){ declarar (@decorate = evaluar @saludar(@integrantes) finEval;){evaluar @decorate("_ProfesoresFLP") finEval} }
+
+;Resultado: "Hola:Santiago_Ivan_Cristian_Jhan_ProfesoresFLP"

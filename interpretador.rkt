@@ -338,78 +338,91 @@
                        (buscar-variable id old-env)
                  ))))))
 
+
+;==========================================================================
+; PUNTO 5: declarar (variables locales)
+;==========================================================================
+
+;declarar (@x=2;@y=3;@a=7;){ (@a+(@x~@y)) }
+;Resultado: 6
+;declarar (@x=2;@y=3;@a=7;) { (@a+@b) }
+;Resultado: 9
+;declarar (@x=5;) { declarar (@x=10;) { @x } }
+;Resultado: 10
+
+;==========================================================================
+; PUNTO 6: procedimiento (crea una cerradura)
+;==========================================================================
+
+;procedimiento (@x,@y,@z) { ((@x+@y)+@z) }
+;Resultado: #(struct:cerradura (@x @y @z) #(struct:primapp-bin-exp ...) #(struct:extendido (@a @b @c @d @e) (1 2 3 "hola" "FLP") #(struct:vacio)))
+
+;==========================================================================
+; PUNTO 7: evaluar ... finEval (aplicar procedimientos)
+;==========================================================================
+
+;declarar (@x=2; @y=3; @a=procedimiento (@x,@y,@z) { ((@x+@y)+@z) } ;) { evaluar @a (1,2,@x) finEval }
+;Resultado: 5
+;declarar (@x=procedimiento (@a,@b) { ((@a*@a) + (@b*@b)) }; @y=procedimiento (@x,@y) { (@x+@y) } ;) { ( evaluar @x(1,2) finEval + evaluar @y(2,3) finEval ) }
+;Resultado: 10
+;declarar (@x= Si (@a*@b) { (@d concat @e) } sino { longitud((@d concat @e)) }; @y=procedimiento (@x,@y) { (@x+@y) } ;) { ( longitud(@x) * evaluar @y(2,3) finEval ) }
+;Resultado: 35
+
+;evaluar procedimiento (@x) { (@x * @x) } (4) finEval
+;Resultado: 16
+;evaluar procedimiento () { 7 } () finEval
+;Resultado: 7
+;evaluar procedimiento (@x) { (@x + @a) } (5) finEval
+;Resultado: 6
+;declarar (@k=10;) { declarar (@f=procedimiento (@x) { (@x + @k) };) { declarar (@k=100;) { evaluar @f (1) finEval } } }
+;Resultado: 11 (ligadura estática)
+;declarar (@apl=procedimiento (@f,@v) { evaluar @f (@v) finEval }; @doble=procedimiento (@n) { (@n * 2) };) { evaluar @apl (@doble, 21) finEval }
+;Resultado: 42
+;evaluar @b (1) finEval
+;Resultado: "Error, no es un procedimiento"
+
+;==========================================================================
+; PUNTO 8: declararRec (recursión)
+;==========================================================================
+
+;declararRec ( @fact(@n) = Si @n { (@n * evaluar @fact(sub1(@n)) finEval) } sino { 1 } ; ) { evaluar @fact(5) finEval }
+;Resultado: 120
+;declararRec ( @fib(@n) = Si (@n < 2) { @n } sino { (evaluar @fib(sub1(@n)) finEval + evaluar @fib(sub1(sub1(@n))) finEval) } ; ) { evaluar @fib(6) finEval }
+;Resultado: 8
+;declararRec ( @par(@n) = Si @n { evaluar @impar(sub1(@n)) finEval } sino { 1 } ; @impar(@n) = Si @n { evaluar @par(sub1(@n)) finEval } sino { 0 } ; ) { evaluar @par(4) finEval }
+;Resultado: 1
+;declararRec ( @par(@n) = Si @n { evaluar @impar(sub1(@n)) finEval } sino { 1 } ; @impar(@n) = Si @n { evaluar @par(sub1(@n)) finEval } sino { 0 } ; ) { evaluar @par(3) finEval }
+;Resultado: 0
+
+
+
 ;******************************************************************************************
 ;Punto 9: programas en el lenguaje
 ;(cada programa se copia y pega en el interpretador, después del prompt  --> )
-;
-;Nota: el lenguaje no tiene modulo ni division entera, por eso en (a) y (d)
-;se definen procedimientos auxiliares recursivos (@divEntera y @esPar).
 
-;a) @sumarDigitos: suma los digitos de un entero positivo
-;
-;declararRec (
-;    @divEntera(@n, @d) = Si (@n < @d) { 0 }
-;                         sino { add1(evaluar @divEntera((@n ~ @d), @d) finEval) } ;
-;    @sumarDigitos(@n)  = Si (@n < 10) { @n }
-;                         sino {
-;                           declarar (@q = evaluar @divEntera(@n, 10) finEval ;) {
-;                             ((@n ~ (@q * 10)) + evaluar @sumarDigitos(@q) finEval)
-;                           }
-;                         } ;
-;  ) {
-;    evaluar @sumarDigitos(147) finEval
-;  }
-;
+;a) @sumarDigitos: suma los dígitos de un entero positivo
+
+;declararRec ( @divEntera(@n, @d) = Si (@n < @d) { 0 } sino { add1(evaluar @divEntera((@n ~ @d), @d) finEval) } ; @sumarDigitos(@n) = Si (@n < 10) { @n } sino { declarar (@q = evaluar @divEntera(@n, 10) finEval ;) { ((@n ~ (@q * 10)) + evaluar @sumarDigitos(@q) finEval) } } ; ) { evaluar @sumarDigitos(147) finEval }
 ;Resultado: 12
 
 ;b) @sumaNaturales(n): suma de los primeros n enteros positivos
-;
 ;Ejemplo n=5:
-;declararRec (
-;    @sumaNaturales(@n) = Si (@n == 0) { 0 }
-;                         sino { (@n + evaluar @sumaNaturales(sub1(@n)) finEval) } ;
-;  ) {
-;    evaluar @sumaNaturales(5) finEval
-;  }
+
+;declararRec ( @sumaNaturales(@n) = Si (@n == 0) { 0 } sino { (@n + evaluar @sumaNaturales(sub1(@n)) finEval) } ; ) { evaluar @sumaNaturales(5) finEval }
 ;Resultado: 15
-;
 ;Ejemplo n=10:
-;declararRec (
-;    @sumaNaturales(@n) = Si (@n == 0) { 0 }
-;                         sino { (@n + evaluar @sumaNaturales(sub1(@n)) finEval) } ;
-;  ) {
-;    evaluar @sumaNaturales(10) finEval
-;  }
+
+;declararRec ( @sumaNaturales(@n) = Si (@n == 0) { 0 } sino { (@n + evaluar @sumaNaturales(sub1(@n)) finEval) } ; ) { evaluar @sumaNaturales(10) finEval }
 ;Resultado: 55
 
 ;c) @multiplicar(x, y): producto mediante sumas sucesivas (sin usar *)
-;
-;declararRec (
-;    @multiplicar(@x, @y) = Si (@y == 0) { 0 }
-;                           sino { (@x + evaluar @multiplicar(@x, sub1(@y)) finEval) } ;
-;  ) {
-;    evaluar @multiplicar(4, 3) finEval
-;  }
-;
+
+;declararRec ( @multiplicar(@x, @y) = Si (@y == 0) { 0 } sino { (@x + evaluar @multiplicar(@x, sub1(@y)) finEval) } ; ) { evaluar @multiplicar(4, 3) finEval }
 ;Resultado: 12
 
 ;d) @sumaParesRango(x, y): suma de los pares en el rango [x, y]
-;
-;declararRec (
-;    @esPar(@n) = Si (@n < 2) { (@n == 0) }
-;                 sino { evaluar @esPar((@n ~ 2)) finEval } ;
-;    @sumaParesRango(@x, @y) = Si (@x > @y) { 0 }
-;                              sino {
-;                                Si evaluar @esPar(@x) finEval {
-;                                  (@x + evaluar @sumaParesRango(add1(@x), @y) finEval)
-;                                } sino {
-;                                  evaluar @sumaParesRango(add1(@x), @y) finEval
-;                                }
-;                              } ;
-;  ) {
-;    evaluar @sumaParesRango(2, 7) finEval
-;  }
-;
+
+;declararRec ( @esPar(@n) = Si (@n < 2) { (@n == 0) } sino { evaluar @esPar((@n ~ 2)) finEval } ; @sumaParesRango(@x, @y) = Si (@x > @y) { 0 } sino { Si evaluar @esPar(@x) finEval { (@x + evaluar @sumaParesRango(add1(@x), @y) finEval) } sino { evaluar @sumaParesRango(add1(@x), @y) finEval } } ; ) { evaluar @sumaParesRango(2, 7) finEval }
 ;Resultado: 12
 
 ;;-----------------> Puntos e y f <-------------------

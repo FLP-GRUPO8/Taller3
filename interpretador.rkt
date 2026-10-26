@@ -338,6 +338,138 @@
                        (buscar-variable id old-env)
                  ))))))
 
+;==========================================================================
+; EJEMPLOS - PUNTOS 1 AL 4
+;==========================================================================
+
+;scan&parse: string -> <programa>
+;(scan&parse "5")
+;Resultado: #(struct:un-programa #(struct:numero-lit 5))
+;(scan&parse "@x")
+;Resultado: #(struct:un-programa #(struct:var-exp @x))
+;(scan&parse "(2 + 3)")
+;Resultado: #(struct:un-programa #(struct:primapp-bin-exp #(struct:numero-lit 2) #(struct:primitiva-suma) #(struct:numero-lit 3)))
+
+;list-find-position: symbol <list-of symbol> -> número | #f
+;(list-find-position '@b '(@a @b @c))
+;Resultado: 1
+;(list-find-position '@a '(@a @b @c))
+;Resultado: 0
+;(list-find-position '@z '(@a @b @c))
+;Resultado: #f
+
+;list-index: predicado lista -> número | #f
+;(list-index even? '(1 3 4 5))
+;Resultado: 2
+;(list-index symbol? '(1 2 x))
+;Resultado: 2
+;(list-index number? '(a b c))
+;Resultado: #f
+
+;bool->num: booleano -> número
+;(bool->num #t)
+;Resultado: 1
+;(bool->num #f)
+;Resultado: 0
+;(bool->num (> 3 2))
+;Resultado: 1
+
+;values-equal?: valor valor -> boolean
+;(values-equal? 2 2.0)
+;Resultado: #t
+;(values-equal? "FLP" "FLP")
+;Resultado: #t
+;(values-equal? 1 "1")
+;Resultado: #f
+
+;empty-env: -> <ambiente>
+;(empty-env)
+;Resultado: #(struct:vacio)
+;(ambiente? (empty-env))
+;Resultado: #t
+;(buscar-variable '@a (empty-env))
+;Resultado: "Error, la variable no existe"
+
+;extend-env: <list-of symbol> <list-of valor> <ambiente> -> <ambiente>
+;(extend-env '(@x) '(1) (empty-env))
+;Resultado: #(struct:extendido (@x) (1) #(struct:vacio))
+;(buscar-variable '@a (extend-env '(@a) '(99) (init-env)))
+;Resultado: 99
+;(buscar-variable '@b (extend-env '(@x) '(1) (init-env)))
+;Resultado: 2
+
+;init-env: -> <ambiente>
+;(init-env)
+;Resultado: #(struct:extendido (@a @b @c @d @e) (1 2 3 "hola" "FLP") #(struct:vacio))
+;(buscar-variable '@c (init-env))
+;Resultado: 3
+;(buscar-variable '@e (init-env))
+;Resultado: "FLP"
+
+;buscar-variable: symbol <ambiente> -> valor
+;(buscar-variable '@a (init-env))
+;Resultado: 1
+;(buscar-variable '@d (init-env))
+;Resultado: "hola"
+;(buscar-variable '@zzz (init-env))
+;Resultado: "Error, la variable no existe"
+
+;valor-verdad?: valor -> boolean
+;(valor-verdad? 0)
+;Resultado: #f
+;(valor-verdad? 7)
+;Resultado: #t
+;(valor-verdad? "hola")
+;Resultado: #t
+
+;apply-primitive-bin: <primitiva-binaria> valor valor -> valor
+;(apply-primitive-bin (primitiva-suma) 2 3)
+;Resultado: 5
+;(apply-primitive-bin (primitiva-concat) "hola" "_FLP")
+;Resultado: "hola_FLP"
+;(apply-primitive-bin (primitiva-mayor) 5 9)
+;Resultado: 0
+
+;apply-primitive-un: <primitiva-unaria> valor -> valor
+;(apply-primitive-un (primitiva-longitud) "hola")
+;Resultado: 4
+;(apply-primitive-un (primitiva-add1) 9)
+;Resultado: 10
+;(apply-primitive-un (primitiva-negacion-booleana) 0)
+;Resultado: 1
+
+;eval-rand: <expresion> <ambiente> -> valor
+;(eval-rand (numero-lit 8) (init-env))
+;Resultado: 8
+;(eval-rand (var-exp '@b) (init-env))
+;Resultado: 2
+;(eval-rand (primapp-bin-exp (var-exp '@a) (primitiva-suma) (numero-lit 10)) (init-env))
+;Resultado: 11
+
+;eval-rands: <list-of expresion> <ambiente> -> <list-of valor>
+;(eval-rands (list (var-exp '@a) (numero-lit 10) (var-exp '@e)) (init-env))
+;Resultado: (1 10 "FLP")
+;(eval-rands (list (texto-lit "hola") (primapp-un-exp (primitiva-add1) (var-exp '@c))) (init-env))
+;Resultado: ("hola" 4)
+;(eval-rands '() (init-env))
+;Resultado: ()
+
+;evaluar-expresion: <expresion> <ambiente> -> valor
+;(evaluar-expresion (numero-lit 5) (init-env))
+;Resultado: 5
+;(evaluar-expresion (var-exp '@b) (init-env))
+;Resultado: 2
+;(evaluar-expresion (condicional-exp (numero-lit 0) (numero-lit 1) (numero-lit 2)) (init-env))
+;Resultado: 2
+
+;eval-program: <programa> -> valor
+;(eval-program (scan&parse "(4 ~ -5)"))
+;Resultado: 9
+;(eval-program (scan&parse "Si (longitud(@d) ~ 4) { 2 } sino { 3 }"))
+;Resultado: 3
+;(eval-program (scan&parse "(@d concat @e)"))
+;Resultado: "holaFLP"
+
 
 ;==========================================================================
 ; PUNTO 5: declarar (variables locales)
